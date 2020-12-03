@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[172]:
 
 
 import torch
@@ -11,7 +11,7 @@ from random import shuffle
 import torch.optim as optim
 
 
-# In[2]:
+# In[173]:
 
 
 #créer les items du vocabulaire: liste des mot, attribution d'un chiffre pour chacun des mots, et inverse
@@ -39,7 +39,17 @@ def vocabulary(filename,padding='<pad>',unknown='<unk>'):
     return dict,word2int,int2word
 
 
-# In[3]:
+# In[174]:
+
+
+
+dict, word2int,int2word = vocabulary('wiki.train.raw',padding='<pad>',unknown='<unk>')
+print(dict[0:10])
+#print(word2int[0:10])
+#print(int2word[0:10])
+
+
+# In[175]:
 
 
 def pad_sequence(sequence,pad_size,pad_token):
@@ -63,7 +73,19 @@ def decode_sequence(sequence,decoding_map):
     return [ decoding_map[word] for word in sequence]
 
 
-# In[4]:
+# In[176]:
+
+
+test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa']
+test = pad_sequence(test, 10, '<pad>')
+print(test)
+test = code_sequence(test, word2int, '<unk>')
+print(test)
+test = decode_sequence(test, int2word)
+print(test)
+
+
+# In[177]:
 
 
 def read_tokens(filename):
@@ -99,9 +121,17 @@ def read_tokens(filename):
     return tokens
 
 
-# In[5]:
+# In[178]:
 
 
+tokens = read_tokens('wiki.train.raw')
+print(tokens[0:2])
+
+
+# In[179]:
+
+
+#renvoie le premier mot de la phrase + n-1 nombre de mot dans la phrase (pour enlever le ".")
 def seqsplit(sequence):
     sentences = []
     for i in range(len(sequence)-2):
@@ -110,9 +140,19 @@ def seqsplit(sequence):
     return sentences
 
 
-# In[6]:
+# In[180]:
 
 
+test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa', '.']
+test = seqsplit(test)
+print(test)
+#print(len(test))
+
+
+# In[181]:
+
+
+#pour chaque phrase, renvoie le dernier mot de la phrase et les mots le précédant
 def Xandy(sequence):
     X = []
     y = []
@@ -120,46 +160,78 @@ def Xandy(sequence):
     for i in range(len(sequence)):
         X.append(sequence[i][0:1+i])
         y.append([sequence[i][-1]])
-        #print(i,' : ',sequence[i][0:1+i])
-        #print(i,' :',sequence[i][-1])
     return X,y
 
 
-# In[8]:
+# In[182]:
 
 
-"""
-dict, word2int,int2word = vocabulary('wiki.train.raw',padding='<pad>',unknown='<unk>')
-print(dict[0:10])
-#print(word2int[0:10])
-#print(int2word[0:10])
-tokens = read_tokens('wiki.train.raw')
-print(tokens[0:1])
-
-
-
-test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa']
-test = pad_sequence(test, 10, '<pad>')
-print(test)
-test = code_sequence(test, word2int, '<unk>')
-print(test)
-test = decode_sequence(test, int2word)
-print(test)
-
-
-
-test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa', '.']
-test = seqsplit(test)
-#print(test)
-#print(len(test))
 testX, testy = Xandy(test)
 print('X: ',testX)
 print('y: ',testy)
 
+
+# In[183]:
+
+
+#transforme toutes les phrases en corpus en phrase X pour target y
+def eachSentence(tokens):
+    seqX = []
+    seqy = []
+    for list in tokens:
+        sentences = seqsplit(list)
+        seqX_current, seqy_current = Xandy(sentences)
+        for i in seqX_current:
+            seqX.append(i)
+        for i in seqy_current:
+            seqy.append(i)
+    return seqX,seqy
+
+
+# In[184]:
+
+
+test = [['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa1', '.'],
+        ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa2', '.'],
+        ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa3', '.']]
+#print(test)
+testX, testy = eachSentence(test)
+
+
+print('y: ',testy)
+
+print('X: ',testX)
+"""
+print(testy[0])
+print(testX[0])
 """
 
 
-# In[26]:
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[135]:
 
 
 
