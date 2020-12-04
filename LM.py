@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[172]:
+# In[1]:
 
 
 import torch
@@ -11,7 +11,7 @@ from random import shuffle
 import torch.optim as optim
 
 
-# In[173]:
+# In[2]:
 
 
 #créer les items du vocabulaire: liste des mot, attribution d'un chiffre pour chacun des mots, et inverse
@@ -39,17 +39,21 @@ def vocabulary(filename,padding='<pad>',unknown='<unk>'):
     return dict,word2int,int2word
 
 
-# In[174]:
+# In[3]:
 
 
-
+"""
 dict, word2int,int2word = vocabulary('wiki.train.raw',padding='<pad>',unknown='<unk>')
-print(dict[0:10])
+#print(dict[0:10])
 #print(word2int[0:10])
 #print(int2word[0:10])
+print(len(dict))
+print(len(word2int))
+print(len(int2word))
+"""
 
 
-# In[175]:
+# In[4]:
 
 
 def pad_sequence(sequence,pad_size,pad_token):
@@ -73,9 +77,10 @@ def decode_sequence(sequence,decoding_map):
     return [ decoding_map[word] for word in sequence]
 
 
-# In[176]:
+# In[5]:
 
 
+"""
 test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa']
 test = pad_sequence(test, 10, '<pad>')
 print(test)
@@ -83,9 +88,10 @@ test = code_sequence(test, word2int, '<unk>')
 print(test)
 test = decode_sequence(test, int2word)
 print(test)
+"""
 
 
-# In[177]:
+# In[6]:
 
 
 def read_tokens(filename):
@@ -121,14 +127,17 @@ def read_tokens(filename):
     return tokens
 
 
-# In[178]:
+# In[7]:
 
 
+"""
 tokens = read_tokens('wiki.train.raw')
-print(tokens[0:2])
+#print(tokens[0:2])
+print(len(tokens))
+"""
 
 
-# In[179]:
+# In[8]:
 
 
 #renvoie le premier mot de la phrase + n-1 nombre de mot dans la phrase (pour enlever le ".")
@@ -140,16 +149,18 @@ def seqsplit(sequence):
     return sentences
 
 
-# In[180]:
+# In[9]:
 
 
+"""
 test = ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa', '.']
 test = seqsplit(test)
 print(test)
 #print(len(test))
+"""
 
 
-# In[181]:
+# In[10]:
 
 
 #pour chaque phrase, renvoie le dernier mot de la phrase et les mots le précédant
@@ -163,15 +174,17 @@ def Xandy(sequence):
     return X,y
 
 
-# In[182]:
+# In[11]:
 
 
+"""
 testX, testy = Xandy(test)
 print('X: ',testX)
 print('y: ',testy)
+"""
 
 
-# In[183]:
+# In[12]:
 
 
 #transforme toutes les phrases en corpus en phrase X pour target y
@@ -188,9 +201,10 @@ def eachSentence(tokens):
     return seqX,seqy
 
 
-# In[184]:
+# In[13]:
 
 
+"""
 test = [['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa1', '.'],
         ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa2', '.'],
         ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa3', '.']]
@@ -201,44 +215,51 @@ testX, testy = eachSentence(test)
 print('y: ',testy)
 
 print('X: ',testX)
-"""
+
 print(testy[0])
 print(testX[0])
 """
 
 
-# In[ ]:
+# In[14]:
 
 
+"""
+
+tokens = read_tokens('wiki.train.raw')
+tokensX, tokensy = eachSentence(tokens)
+
+"""
 
 
-
-# In[ ]:
-
+# In[15]:
 
 
+"""
+
+print(len(tokensX))
+print(len(tokensy))
+print(tokensX[1860385])
+print(tokensy[1860384])
+
+print(tokensX[180])
+print(tokensy[180])
+print(tokensy[179])
+
+print(tokensX[1860385])
+print(tokensy[1860384])
+
+"""
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[135]:
+# In[16]:
 
 
 
 class DataGenerator:
 
         #Reuse all relevant helper functions defined above to solve the problems
-        def __init__(self,conllfilename, parentgenerator = None, pad_token='<pad>',unk_token='<unk>'):
+        def __init__(self,filename, parentgenerator = None, pad_token='<pad>',unk_token='<unk>'):
 
               if parentgenerator is not None: #Reuse the encodings of the parent if specified
                   self.pad_token      = parentgenerator.pad_token
@@ -255,7 +276,7 @@ class DataGenerator:
                   #self.output_idx2sym,self.output_sym2idx = ...
                   pass
                   #######################
-                  self.input_idx2sym,self.input_sym2idx,self.input_int2word   = vocabulary(conllfilename,True,padding=pad_token,unknown=unk_token)
+                  self.input_idx2sym,self.input_sym2idx,self.input_int2word  = vocabulary(filename,padding=pad_token,unknown=unk_token)
                   #self.output_idx2sym,self.output_sym2idx = vocabulary(conllfilename,False,padding=pad_token,unknown=None)
                   #######################
 
@@ -264,7 +285,9 @@ class DataGenerator:
               #self.Ytokens = ...
               pass
               ##########################
-              self.Xtokens = read_conll_tokens(conllfilename)
+              self.tokens = read_tokens(filename)
+              self.Xtokens, self.Ytokens = eachSentence(self.tokens)
+              print('tokens size is: ', len(self.Xtokens))
               #self.Ytokens = read_conll_tags(conllfilename)
               ##########################
 
@@ -273,7 +296,7 @@ class DataGenerator:
               #This is an example generator function yielding one batch after another
               #Batches are lists of lists
               
-              assert(len(self.Xtokens) == len(self.Ytokens))
+              #assert(len(self.Xtokens) == len(self.Ytokens))
               
               N     = len(self.Xtokens)
               idxes = list(range(N))
@@ -286,20 +309,41 @@ class DataGenerator:
               bstart = 0
               while bstart < N:
                  bend        = min(bstart+batch_size,N)
+                 print('bend',bend)
                  batch_idxes = idxes[bstart:bend] 
-                 batch_len   = max(len(self.Xtokens[idx]) for idx in batch_idxes)              
+                 print('batch_idxes',batch_idxes)
+                 batch_len   = max(len(self.Xtokens[idx]) for idx in batch_idxes)
+                 print('batch_len: ', batch_len)
               
                  seqX = [ pad_sequence(self.Xtokens[idx],batch_len,self.pad_token) for idx in batch_idxes]
-                 seqY = [ pad_sequence(self.Ytokens[idx],batch_len,self.pad_token) for idx in batch_idxes]
+                 #seqY = [ pad_sequence(self.Ytokens[idx],batch_len,self.pad_token) for idx in batch_idxes]
+                 print(len(seqX))
+                 print('seqX: ',seqX)
+                 seqY = [ self.Ytokens[idx] for idx in batch_idxes]
+                 print(len(seqY))
+                 print('seqY: ',seqY)
                  seqX = [ code_sequence(seq,self.input_sym2idx,self.unk_token) for seq in seqX]
-                 seqY = [ code_sequence(seq,self.output_sym2idx) for seq in seqY]
+                 seqY = [ code_sequence(seq,self.input_sym2idx) for seq in seqY]
                  
-                 assert(len(seqX) == len(seqY))
+                 #assert(len(seqX) == len(seqY))
                  yield (seqX,seqY)
                  bstart += batch_size
 
 
-# In[ ]:
+# In[17]:
+
+
+"""
+test = [['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa1', '.'],
+        ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa2', '.'],
+        ['runs', 'parallel', 'to', 'the', 'first', 'game', 'bababa3', '.']]
+
+test = [pad_sequence(seq, 10, '<pad>') for seq in test ]
+print(test)
+"""
+
+
+# In[18]:
 
 
 
@@ -320,11 +364,12 @@ class NERtagger(nn.Module):
 
         #########################
         invocab_size    = len(datagenerator.input_idx2sym)
-        outvocab_size   = len(datagenerator.output_idx2sym)
+        outvocab_size   = len(datagenerator.input_idx2sym)
         pad_index       = datagenerator.input_sym2idx[datagenerator.pad_token]
         self.embeddings = nn.Embedding(invocab_size,self.embedding_size,padding_idx=pad_index).to(device)
         self.lstm       = nn.LSTM(self.embedding_size,self.hidden_size).to(device)
         self.linear_out = nn.Linear(self.hidden_size,outvocab_size).to(device)
+        #self.softmax_out = nn.softmax(self.hidden_size,outvocab_size).to(device)
         #########################
 
       def forward(self,Xinput):
@@ -335,6 +380,7 @@ class NERtagger(nn.Module):
         E    = self.embeddings(Xinput)
         H,_  = self.lstm(E)
         return self.linear_out(H)
+        #return self.softmax_out(H)
         ############################
         
       def train(self,traingenerator,validgenerator,epochs,batch_size,device='cuda',learning_rate=0.001): 
@@ -344,7 +390,7 @@ class NERtagger(nn.Module):
 
         ############################
         device       = torch.device(device)
-        pad_index    = traingenerator.output_sym2idx[traingenerator.pad_token]
+        pad_index    = traingenerator.input_sym2idx[traingenerator.pad_token]
         loss_fnc     = nn.CrossEntropyLoss(ignore_index=pad_index)
         optimizer    = optim.Adam(self.parameters(),lr=learning_rate)
 
@@ -357,9 +403,13 @@ class NERtagger(nn.Module):
                 
                 Yhat = self.forward(X)
 
-                batch_size,seq_len = Y.shape
-                Yhat = Yhat.view(batch_size*seq_len,-1)
-                Y    = Y.view(batch_size*seq_len)
+                #batch_size,seq_len = Y.shape
+                #Yhat = Yhat.view(batch_size*seq_len,-1)
+                #Y    = Y.view(batch_size*seq_len)
+                print('X is: ',X.shape)
+                print('Y is: ',Y.shape)
+                print('Yhat: ',Yhat.shape)
+                Y = (batch_size, 1, len(traingenerator.input_idx2sym))
                 loss = loss_fnc(Yhat,Y)
                 loss.backward()
                 optimizer.step()
@@ -381,7 +431,7 @@ class NERtagger(nn.Module):
           batch_losses      = []
 
           device = torch.device(device)
-          pad_index = datagenerator.output_sym2idx[datagenerator.pad_token]
+          pad_index = datagenerator.in_sym2idx[datagenerator.pad_token]
           loss_fnc  = nn.CrossEntropyLoss(ignore_index=pad_index)
 
           for (seqX,seqY) in datagenerator.generate_batches(batch_size):
@@ -392,9 +442,9 @@ class NERtagger(nn.Module):
                   Yhat = self.forward(X)
 
                   #Flattening and loss computation
-                  batch_size,seq_len = Y.shape
-                  Yhat = Yhat.view(batch_size*seq_len,-1)
-                  Y    = Y.view(batch_size*seq_len)
+                  #batch_size,seq_len = Y.shape
+                  #Yhat = Yhat.view(batch_size*seq_len,-1)
+                  #Y    = Y.view(batch_size*seq_len)
                   loss = loss_fnc(Yhat,Y)
                   batch_losses.append(loss.item())
 
@@ -413,4 +463,56 @@ class NERtagger(nn.Module):
             torch.save(self.state_dict(), 'tagger_params.pt')
 
           print('[valid] mean Loss = %f | mean accurracy = %f'%(valid_loss,sum(batch_accurracies)/L))
+
+
+# In[19]:
+
+
+trainset = DataGenerator('wiki.train.raw')
+validset = DataGenerator('wiki.test.raw',parentgenerator = trainset)
+tagger   = NERtagger(trainset,64,128)
+tagger.train(trainset,validset,20,32,device='cuda') 
+
+
+# In[ ]:
+
+
+
+
+
+# In[20]:
+
+
+tokens = read_tokens('wiki.train.raw')
+tokensX, tokensy = eachSentence(tokens)
+
+
+# In[21]:
+
+
+print(tokensX[526613])
+print(tokensX[526619])
+print(tokensy[526613])
+
+
+# In[22]:
+
+
+print(tokensX[1355331])
+print(tokensX[1355336])
+print(tokensy[1355331])
+
+
+# In[23]:
+
+
+print(tokensX[1817299])
+print(tokensX[1817305])
+print(tokensy[1817299])
+
+
+# In[ ]:
+
+
+
 
